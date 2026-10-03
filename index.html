@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Physik-Kurs: Quiz Nr.5</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#172033;
+      --muted:#667085;
+      --line:#d9deea;
+      --accent:#2f5fd0;
+      --accent2:#eef3ff;
+      --ok:#147a3f;
+      --bad:#b42318;
+      --okbg:#eaf7ef;
+      --badbg:#fff1f0;
+      --shadow:0 14px 35px rgba(15,23,42,.10);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:linear-gradient(135deg,#f8fbff 0%,#eef2f9 100%);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .app{
+      width:min(940px,100%);
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(255,255,255,.9);
+      box-shadow:var(--shadow);
+      border-radius:30px;
+      overflow:hidden;
+      backdrop-filter:blur(14px);
+    }
+    header{
+      padding:28px 30px 18px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(135deg,#ffffff 0%,#f4f7ff 100%);
+    }
+    h1{margin:0 0 8px;font-size:clamp(1.55rem,3vw,2.35rem);line-height:1.1}
+    .subtitle{margin:0;color:var(--muted);font-size:1rem;line-height:1.5}
+    main{padding:28px 30px 32px}
+    .screen{display:none}.screen.active{display:block}
+    .controls{display:grid;grid-template-columns:1fr;gap:12px;margin:24px 0 8px}
+    .choice-card{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:18px;
+      padding:16px;
+      cursor:pointer;
+      transition:.18s ease;
+      min-height:104px;
+    }
+    .choice-card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 10px 24px rgba(47,95,208,.12)}
+    .choice-card strong{display:block;margin-bottom:6px;font-size:1.05rem}
+    .choice-card span{color:var(--muted);font-size:.94rem;line-height:1.35}
+    .topbar{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;color:var(--muted);font-size:.94rem}
+    .progress{height:11px;background:#e7ebf4;border-radius:999px;overflow:hidden;flex:1;min-width:180px}
+    .bar{height:100%;width:0;background:var(--accent);transition:.25s ease}
+    .question-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+    .tag{display:inline-block;background:var(--accent2);color:var(--accent);padding:6px 10px;border-radius:999px;font-weight:700;font-size:.82rem;margin-bottom:14px}
+    .question{font-size:1.35rem;line-height:1.35;margin:0 0 20px;font-weight:750}
+    .answers{display:grid;gap:11px}
+    button{font:inherit}
+    .answer{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:16px;padding:15px 16px;cursor:pointer;line-height:1.35;transition:.14s ease}
+    .answer:hover:not(:disabled){border-color:var(--accent);background:#f8faff}
+    .answer:disabled{cursor:default}
+    .answer.correct{border-color:rgba(20,122,63,.35);background:var(--okbg);color:var(--ok);font-weight:700}
+    .answer.wrong{border-color:rgba(180,35,24,.35);background:var(--badbg);color:var(--bad);font-weight:700}
+    .feedback{display:none;margin-top:18px;padding:16px;border-radius:16px;border:1px solid var(--line);background:#fafbff;line-height:1.55}
+    .feedback.show{display:block}
+    .feedback strong{display:block;margin-bottom:4px}
+    .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+    .primary,.secondary{border:0;border-radius:14px;padding:12px 16px;cursor:pointer;font-weight:750}
+    .primary{background:var(--accent);color:black}.primary:hover{filter:brightness(.96)}
+    .secondary{background:#edf1f8;color:#26334d}.secondary:hover{background:#e3e9f4}
+    .result-box{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+    .score{font-size:clamp(2rem,6vw,4.4rem);line-height:1;margin:4px 0 10px;font-weight:850;color:var(--accent)}
+    .small{color:var(--muted);line-height:1.55}
+    .review{margin-top:22px;display:grid;gap:10px}
+    .review-item{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;line-height:1.45}
+    .review-item.ok{border-left:7px solid var(--ok)}.review-item.bad{border-left:7px solid var(--bad)}
+    .review-item b{display:block;margin-bottom:4px}
+    footer{padding:0 30px 24px;color:var(--muted);font-size:.88rem;text-align:center}
+
+    html[data-theme="dark"]{
+      color-scheme:dark;
+      --bg:#0f172a;--card:#111827;--text:#e5e7eb;--muted:#a7b0c0;--line:#334155;
+      --accent:#7aa2ff;--accent2:#172554;--ok:#70e39b;--bad:#ff8f86;--okbg:#0b2f1f;--badbg:#351414;
+      --shadow:0 14px 35px rgba(0,0,0,.35);
+    }
+    html[data-theme="dark"] body{background:linear-gradient(135deg,#020617 0%,#111827 100%)}
+    html[data-theme="dark"] .app{background:rgba(15,23,42,.88);border-color:rgba(148,163,184,.18)}
+    html[data-theme="dark"] header{background:linear-gradient(135deg,#111827 0%,#172033 100%)}
+    html[data-theme="dark"] .choice-card,
+    html[data-theme="dark"] .question-card,
+    html[data-theme="dark"] .answer,
+    html[data-theme="dark"] .result-box,
+    html[data-theme="dark"] .review-item{background:var(--card);border-color:var(--line)}
+    html[data-theme="dark"] .answer:hover:not(:disabled){background:#1f2937}
+    html[data-theme="dark"] .pill,
+    html[data-theme="dark"] .feedback{background:#111827;border-color:var(--line)}
+    html[data-theme="dark"] .progress,
+    html[data-theme="dark"] .secondary{background:#1f2937}
+    html[data-theme="dark"] .secondary{color:var(--text)}
+    html[data-theme="dark"] .secondary:hover{background:#263244}
+    html[data-theme="dark"] .primary{color:#ffffff}
+    html[data-theme="dark"] .choice-card:hover,
+    html[data-theme="dark"] .answer:hover:not(:disabled){border-color:var(--accent)}
+    .theme-toggle{margin-top:16px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:9px 14px;cursor:pointer;font-weight:750;box-shadow:0 6px 16px rgba(15,23,42,.08)}
+    .theme-toggle:hover{border-color:var(--accent)}
+    @media (max-width:760px){body{padding:12px;align-items:flex-start}.app{border-radius:22px}header,main{padding-left:18px;padding-right:18px}.controls{grid-template-columns:1fr}.question{font-size:1.16rem}.actions{justify-content:stretch}.primary,.secondary{width:100%}}
+    @media print{body{background:black}.app{box-shadow:none}.actions,.controls,footer{display:none}.screen{display:block}.screen:not(.active){display:none}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Physik-Kurs: Quiz Nr.5</h1>
+      <p class="subtitle">20 Fragen · Pro Frage ist nur eine Antwort richtig.</p>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Dark Mode umschalten">Dark Mode</button>
+    </header>
+
+    <main>
+      <section id="start" class="screen active">
+        <div class="controls">
+          <div class="choice-card" onclick="startQuiz()">
+            <strong>Physik-Quiz starten</strong>
+            <span>Dynamik, Masse, Kraft und die Newtonschen Axiome.</span>
+          </div>
+        </div>
+        <p class="small">Nach jeder Antwort erscheint sofort eine kurze Erklärung. Am Ende sehen Sie Ihre Auswertung. Einige kurze Anwendungs- und Rechenfragen sind enthalten.</p>
+      </section>
+
+      <section id="quiz" class="screen">
+        <div class="topbar">
+          <span class="pill" id="counter">Frage 1/20</span>
+          <div class="progress"><div id="bar" class="bar"></div></div>
+          <span class="pill" id="scoreNow">0 richtig</span>
+        </div>
+        <div class="question-card">
+          <span id="tag" class="tag">Physik · Dynamik und Newtonsche Axiome</span>
+          <p id="question" class="question"></p>
+          <div id="answers" class="answers"></div>
+          <div id="feedback" class="feedback"></div>
+          <div class="actions">
+            <button class="secondary" onclick="backToStart()">Zum Start</button>
+            <button id="nextBtn" class="primary" onclick="nextQuestion()" style="display:none">Weiter</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="result" class="screen">
+        <div class="result-box">
+          <p class="small" style="margin:0">Ergebnis</p>
+          <div id="finalScore" class="score">0/0</div>
+          <p id="finalText" class="small"></p>
+          <div class="actions" style="justify-content:flex-start">
+            <button class="primary" onclick="startQuiz()">Nochmal üben</button>
+            <button class="secondary" onclick="backToStart()">Zum Start</button>
+          </div>
+          <div id="review" class="review"></div>
+        </div>
+      </section>
+    </main>
+    <footer>Offline nutzbar · Einfache HTML-Datei · Keine externen Inhalte</footer>
+  </div>
+
+<script>
+const themeToggle = document.getElementById('themeToggle');
+function setTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('quiz-theme', theme);
+  if(themeToggle){
+    themeToggle.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+  }
+}
+const savedTheme = localStorage.getItem('quiz-theme');
+const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+if(themeToggle){
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  });
+}
+
+const ALL_QUESTIONS = [{"type":"grundlagen","q":"Womit beschäftigt sich die Dynamik?","a":["Mit den Ursachen von Bewegungsänderungen","Nur mit der Beschreibung von zurückgelegten Wegen","Nur mit gleichförmigen Bewegungen","Mit der Umrechnung von Einheiten"],"c":0,"e":"Die Kinematik beschreibt, wie sich ein Körper bewegt. Die Dynamik untersucht, wodurch sich eine Bewegung verändert."},{"type":"grundlagen","q":"Wann ändert sich die Bewegung eines Körpers?","a":["Wenn er schneller oder langsamer wird oder seine Bewegungsrichtung ändert","Nur wenn er schneller wird","Nur wenn er seine Bewegungsrichtung ändert","Nur wenn er vollständig zum Stillstand kommt"],"c":0,"e":"Eine Bewegungsänderung liegt vor, wenn sich die Geschwindigkeit ändert. Das kann eine Änderung der Schnelligkeit oder der Richtung sein."},{"type":"traegheit","q":"Was bezeichnet man in der Physik als Trägheit?","a":["Die Eigenschaft eines Körpers, sich einer Änderung seiner Bewegung zu widersetzen","Die Fähigkeit eines Körpers, sich ohne Kraft immer schneller zu bewegen","Die Kraft, mit der ein Körper auf die Erde fällt","Die Strecke, die ein Körper in einer Sekunde zurücklegt"],"c":0,"e":"Trägheit bedeutet, dass sich ein Körper einer Änderung seines Bewegungszustands widersetzt."},{"type":"masse","q":"Welche Aussage über die Masse und die Trägheit ist richtig?","a":["Je größer die Masse ist, desto schwieriger lässt sich die Bewegung des Körpers verändern.","Je größer die Masse ist, desto leichter lässt sich der Körper beschleunigen.","Die Masse hat keinen Einfluss auf die Trägheit.","Eine kleinere Masse bedeutet immer eine größere Kraft."],"c":0,"e":"Die träge Masse beschreibt, wie stark die Trägheit eines Körpers ist. Eine größere Masse bedeutet eine größere Trägheit."},{"type":"kraft","q":"Was beschreibt eine Kraft?","a":["Eine Wechselwirkung zwischen Körpern, die eine Bewegung verändern oder einen Körper verformen kann","Nur die Geschwindigkeit eines Körpers","Nur die Masse eines Körpers","Den zurückgelegten Weg eines Körpers"],"c":0,"e":"Eine Kraft beschreibt eine Wechselwirkung zwischen Körpern. Sie kann einen Körper beschleunigen, abbremsen, seine Richtung ändern oder ihn verformen."},{"type":"kraft","q":"Mehrere Kräfte wirken gleichzeitig auf einen Körper. Welche Kraft ist für seine Beschleunigung entscheidend?","a":["Die resultierende Gesamtkraft","Immer die größte einzelne Kraft","Nur die Kraft, die nach rechts wirkt","Die Masse des Körpers"],"c":0,"e":"Wirken mehrere Kräfte, kommt es auf ihre gemeinsame Wirkung an. Entscheidend ist die resultierende Gesamtkraft."},{"type":"newton1","q":"Welche Aussage entspricht dem 1. Newtonschen Axiom, dem Trägheitsprinzip?","a":["Ohne resultierende Gesamtkraft bleibt der Bewegungszustand eines Körpers unverändert.","Ohne resultierende Gesamtkraft wird jeder Körper langsamer.","Jede Kraft erzeugt immer eine gleich große Geschwindigkeit.","Ein Körper kann nur in Ruhe sein, wenn seine Masse null ist."],"c":0,"e":"Nach dem Trägheitsprinzip bleibt ein Körper in Ruhe oder bewegt sich geradlinig mit gleichbleibender Geschwindigkeit weiter, wenn keine resultierende Gesamtkraft wirkt."},{"type":"bezugssystem","q":"Eine Person sitzt in einem fahrenden Zug. Welche Aussage zeigt, warum ein Bezugssystem wichtig ist?","a":["Gegenüber dem Sitz ruht die Person, gegenüber einem Baum neben den Schienen bewegt sie sich.","Die Person bewegt sich gegenüber dem Sitz und dem Baum immer gleich.","Die Person ruht gegenüber jedem möglichen Bezugssystem.","Die Person bewegt sich nur dann, wenn der Zug beschleunigt."],"c":0,"e":"Ob ein Körper ruht oder sich bewegt, hängt vom gewählten Bezugssystem ab."},{"type":"inertialsystem","q":"Was ist ein Inertialsystem?","a":["Ein Bezugssystem, in dem das Trägheitsprinzip gilt","Ein Bezugssystem, in dem jeder Körper beschleunigt","Ein System, in dem keine Masse vorhanden ist","Ein System, in dem ausschließlich die Schwerkraft wirkt"],"c":0,"e":"Ein Inertialsystem ist ein Bezugssystem, in dem das Trägheitsprinzip gilt."},{"type":"newton2","q":"Welche Formel beschreibt das 2. Newtonsche Axiom?","a":["F = m · a","v = s / t","a = Δt / Δv","F = m / a"],"c":0,"e":"Das 2. Newtonsche Axiom verknüpft resultierende Kraft, Masse und Beschleunigung: F = m · a."},{"type":"newton2","q":"Bei gleicher Masse wird die resultierende Kraft auf einen Körper verdoppelt. Was geschieht mit seiner Beschleunigung?","a":["Sie verdoppelt sich.","Sie halbiert sich.","Sie bleibt gleich.","Sie wird null."],"c":0,"e":"Aus F = m · a folgt: Bei gleicher Masse führt die doppelte resultierende Kraft zur doppelten Beschleunigung."},{"type":"newton2","q":"Auf zwei Körper wirkt dieselbe resultierende Kraft. Körper B besitzt die größere Masse. Welcher Körper wird stärker beschleunigt?","a":["Körper A mit der kleineren Masse","Körper B mit der größeren Masse","Beide werden immer gleich stark beschleunigt.","Keiner der beiden Körper wird beschleunigt."],"c":0,"e":"Bei gleicher Kraft gilt: Je größer die Masse ist, desto kleiner ist die Beschleunigung."},{"type":"vektoren","q":"Was signalisiert der Pfeil über den Formelzeichen für Kraft und Beschleunigung?","a":["Dass Kraft und Beschleunigung Vektoren sind und deshalb neben einer Größe auch eine Richtung besitzen.","Dass Kraft und Beschleunigung immer nach oben zeigen","Dass die Größen nur positive Werte annehmen dürfen","Dass Kraft und Beschleunigung miteinander multipliziert werden."],"c":0,"e":"Der Pfeil kennzeichnet Kraft und Beschleunigung als Vektoren. Vektoren besitzen neben einer Größe auch eine Richtung."},{"type":"einheiten","q":"Was bedeutet 1 Newton (1 N)?","a":["1 N = 1 kg · m/s²","1 N = 1 kg · m/s","1 N = 1 m/s²","1 N = 1 kg/s²"],"c":0,"e":"Aus F = m · a folgt für die Einheit der Kraft: 1 N = 1 kg · m/s²."},{"type":"newton3","q":"Welche Aussage beschreibt das 3. Newtonsche Axiom, das Wechselwirkungsprinzip?","a":["Übt Körper A eine Kraft auf Körper B aus, wirkt gleichzeitig eine gleich große, entgegengesetzt gerichtete Kraft von B auf A.","Eine Kraft wirkt immer nur auf einen einzigen Körper und besitzt keine Gegenwirkung.","Zwei wechselwirkende Kräfte wirken immer in dieselbe Richtung.","Die Gegenkraft entsteht erst, nachdem die erste Kraft aufgehört hat."],"c":0,"e":"Das Wechselwirkungsprinzip wird oft mit Actio = Reactio zusammengefasst: Kräfte treten paarweise, gleichzeitig, gleich groß und entgegengesetzt gerichtet auf."},{"type":"newton3","q":"Warum heben sich die beiden Kräfte eines Actio-Reactio-Paares nicht gegenseitig auf?","a":["Weil sie auf verschiedene Körper wirken","Weil eine der beiden Kräfte immer größer ist","Weil nur eine der beiden Kräfte tatsächlich wirkt","Weil beide Kräfte in dieselbe Richtung zeigen"],"c":0,"e":"Die beiden Kräfte sind gleich groß und entgegengesetzt gerichtet, wirken aber auf verschiedene Körper. Deshalb dürfen sie nicht als Kräfte auf demselben Körper gegeneinander verrechnet werden."},{"type":"rechnung","q":"Auf einen Wagen mit einer Masse von 20 kg wirkt eine resultierende Kraft von 40 N. Wie groß ist seine Beschleunigung?","a":["2 m/s²","20 m/s²","800 m/s²","0,5 m/s²"],"c":0,"e":"Aus F = m · a folgt a = F / m = 40 N / 20 kg = 2 m/s²."},{"type":"rechnung","q":"Ein Körper mit einer Masse von 10 kg wird mit 3 m/s² beschleunigt. Wie groß ist die resultierende Kraft?","a":["30 N","13 N","3,3 N","7 N"],"c":0,"e":"Es gilt F = m · a = 10 kg · 3 m/s² = 30 N."},{"type":"rechnung","q":"Auf einen Wagen wirken 100 N nach rechts und 40 N nach links. Wie groß ist die resultierende Kraft?","a":["60 N nach rechts","140 N nach rechts","60 N nach links","40 N nach rechts"],"c":0,"e":"Die Kräfte wirken entgegengesetzt. Daher werden ihre Beträge subtrahiert: 100 N − 40 N = 60 N nach rechts."},{"type":"verknuepfung","q":"Welche Aussage beschreibt die Verbindung zwischen Dynamik und Kinematik am besten?","a":["Die Dynamik erklärt mithilfe von Kräften, warum sich die in der Kinematik beschriebene Bewegung verändert.","Die Dynamik ersetzt alle Größen der Kinematik durch die Masse.","Die Kinematik erklärt die Ursachen von Kräften, die Dynamik nur den zurückgelegten Weg.","Zwischen Dynamik und Kinematik besteht kein Zusammenhang."],"c":0,"e":"Die Kinematik beschreibt Bewegung mit Größen wie Weg, Geschwindigkeit, Beschleunigung und Zeit. Die Dynamik verbindet Bewegungsänderungen mit wirkenden Kräften."}];
+
+let quiz = [];
+let current = 0;
+let score = 0;
+let answered = false;
+let history = [];
+
+
+function shuffle(arr){
+  const copy = [...arr];
+  for(let i=copy.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]] = [copy[j],copy[i]];
+  }
+  return copy;
+}
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function startQuiz(){
+  quiz = shuffle(ALL_QUESTIONS);
+  current = 0;
+  score = 0;
+  history = [];
+  show('quiz');
+  renderQuestion();
+}
+function renderQuestion(){
+  answered = false;
+  const item = quiz[current];
+  document.getElementById('counter').textContent = `Frage ${current+1}/${quiz.length}`;
+  document.getElementById('scoreNow').textContent = `${score} richtig`;
+  document.getElementById('bar').style.width = `${(current/quiz.length)*100}%`;
+  document.getElementById('tag').textContent = 'Physik · Dynamik und Newtonsche Axiome';
+  document.getElementById('question').textContent = item.q;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('nextBtn').style.display = 'none';
+
+  const answerBox = document.getElementById('answers');
+  answerBox.innerHTML = '';
+  const answers = item.a.map((text, idx)=>({text, idx}));
+  shuffle(answers).forEach(({text, idx})=>{
+    const btn = document.createElement('button');
+    btn.className = 'answer';
+    btn.textContent = text;
+    btn.onclick = () => chooseAnswer(btn, idx);
+    answerBox.appendChild(btn);
+  });
+}
+function chooseAnswer(btn, idx){
+  if(answered) return;
+  answered = true;
+  const item = quiz[current];
+  const correct = idx === item.c;
+  if(correct) score++;
+  history.push({q:item.q, correct, chosen:btn.textContent, right:item.a[item.c], exp:item.e, type:item.type});
+
+  document.querySelectorAll('.answer').forEach(b=>{
+    b.disabled = true;
+    if(b.textContent === item.a[item.c]) b.classList.add('correct');
+  });
+  if(!correct) btn.classList.add('wrong');
+
+  const feedback = document.getElementById('feedback');
+  feedback.className = 'feedback show';
+  feedback.innerHTML = `<strong>${correct ? 'Richtig.' : 'Nicht ganz.'}</strong>${escapeHTML(item.e)}`;
+  document.getElementById('scoreNow').textContent = `${score} richtig`;
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('nextBtn').textContent = current === quiz.length-1 ? 'Auswertung anzeigen' : 'Weiter';
+  document.getElementById('bar').style.width = `${((current+1)/quiz.length)*100}%`;
+}
+function nextQuestion(){
+  if(current < quiz.length-1){
+    current++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+function showResult(){
+  show('result');
+  const percent = Math.round((score/quiz.length)*100);
+  document.getElementById('finalScore').textContent = `${score}/${quiz.length}`;
+  let text = '';
+  if(percent >= 85) text = 'Sie haben die Grundlagen der Dynamik und die Newtonschen Axiome bereits gut verstanden.';
+  else if(percent >= 65) text = 'Viele Grundlagen sitzen. Schauen Sie sich besonders die falsch beantworteten Fragen noch einmal an.';
+  else text = 'Wiederholen Sie insbesondere Trägheit, resultierende Kraft und die drei Newtonschen Axiome.';
+  document.getElementById('finalText').textContent = `${percent}% richtig. ${text}`;
+  const review = document.getElementById('review');
+  review.innerHTML = '';
+  history.forEach((h,i)=>{
+    const div = document.createElement('div');
+    div.className = `review-item ${h.correct?'ok':'bad'}`;
+    div.innerHTML = `<b>${i+1}. ${escapeHTML(h.q)}</b>${h.correct ? 'Richtig beantwortet.' : `Ihre Antwort: ${escapeHTML(h.chosen)}<br>Richtig: ${escapeHTML(h.right)}`}<br><span class="small">${escapeHTML(h.exp)}</span>`;
+    review.appendChild(div);
+  });
+}
+function backToStart(){ show('start'); }
+function escapeHTML(str){
+  return String(str).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+</script>
+</body>
+</html>
